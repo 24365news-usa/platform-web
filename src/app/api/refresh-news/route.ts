@@ -64,7 +64,7 @@ async function fetchRSSFeed(url: string, source: string): Promise<NewsItem[]> {
           });
         }
 
-        if (items.length >= 4) break;
+        if (items.length >= 3) break;
       }
     }
     
@@ -85,7 +85,9 @@ export async function POST() {
       { url: 'https://rss.cnn.com/rss/edition.rss', source: 'CNN' },
       { url: 'https://feeds.bbci.co.uk/news/world/rss.xml', source: 'BBC' },
       { url: 'https://feeds.npr.org/1001/rss.xml', source: 'NPR' },
-      { url: 'https://feeds.ap.org/ApTopHeadlines', source: 'AP News' }
+      { url: 'https://feeds.ap.org/ApTopHeadlines', source: 'AP News' },
+      { url: 'https://feeds.a.dj.com/rss/RSSWorldNews.xml', source: 'Wall Street Journal' },
+      { url: 'https://feeds.washingtonpost.com/rss/national', source: 'Washington Post' }
     ];
 
     const allNews: NewsItem[] = [];
@@ -116,9 +118,19 @@ export async function POST() {
       { title: "DEVELOPING: Space exploration missions achieve scientific breakthroughs", source: "Space News", link: "https://24365.news", pubDate: new Date().toISOString() }
     ];
 
-    // Combine and ensure we have at least 15 stories
-    const combinedNews = [...allNews, ...breakingNews];
-    const finalNews = combinedNews.slice(0, 15);
+    // Combine RSS feeds with breaking news, ensuring good mix
+    let finalNews: NewsItem[] = [];
+    
+    if (allNews.length > 0) {
+      // Mix RSS stories with breaking news for variety
+      finalNews = [
+        ...allNews.slice(0, 10), // Up to 10 RSS stories
+        ...breakingNews.slice(0, 5) // Fill with 5 breaking news
+      ].slice(0, 15);
+    } else {
+      // Use breaking news if RSS fails
+      finalNews = breakingNews.slice(0, 15);
+    }
 
     // Save to file
     const newsData = {
