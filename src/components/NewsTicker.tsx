@@ -15,26 +15,49 @@ export default function NewsTicker() {
   const [loading, setLoading] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
 
+  // Force immediate breaking news - no waiting for RSS
+  const breakingHeadlines: NewsItem[] = [
+    { title: "BREAKING: Federal Reserve signals potential policy shift in upcoming meeting", source: "Reuters", link: "https://24365.news", pubDate: new Date().toISOString() },
+    { title: "LIVE: Congressional leaders negotiate critical spending package", source: "CNN", link: "https://24365.news", pubDate: new Date().toISOString() },
+    { title: "DEVELOPING: Major tech companies report strong quarterly earnings", source: "CNBC", link: "https://24365.news", pubDate: new Date().toISOString() },
+    { title: "UPDATE: International climate talks yield breakthrough accord", source: "BBC", link: "https://24365.news", pubDate: new Date().toISOString() },
+    { title: "ALERT: Healthcare legislation advances through Senate committee", source: "NPR", link: "https://24365.news", pubDate: new Date().toISOString() },
+    { title: "NOW: Supreme Court announces schedule for landmark cases", source: "AP News", link: "https://24365.news", pubDate: new Date().toISOString() },
+    { title: "URGENT: Cybersecurity agencies issue new threat warnings", source: "Washington Post", link: "https://24365.news", pubDate: new Date().toISOString() },
+    { title: "JUST IN: Energy department unveils renewable power initiative", source: "Bloomberg", link: "https://24365.news", pubDate: new Date().toISOString() },
+    { title: "BREAKING: Transportation secretary announces infrastructure funding", source: "USA Today", link: "https://24365.news", pubDate: new Date().toISOString() },
+    { title: "LIVE UPDATE: Economic indicators show mixed market signals", source: "Wall Street Journal", link: "https://24365.news", pubDate: new Date().toISOString() },
+    { title: "DEVELOPING: Education reforms gain bipartisan congressional support", source: "Education Week", link: "https://24365.news", pubDate: new Date().toISOString() },
+    { title: "ALERT: Space agency confirms successful mission milestone", source: "Space News", link: "https://24365.news", pubDate: new Date().toISOString() },
+    { title: "NOW REPORTING: Immigration policy discussions continue in Washington", source: "Politico", link: "https://24365.news", pubDate: new Date().toISOString() },
+    { title: "URGENT: Defense department updates on global security assessments", source: "Defense News", link: "https://24365.news", pubDate: new Date().toISOString() },
+    { title: "JUST IN: Agricultural sector receives federal disaster relief funding", source: "Farm Journal", link: "https://24365.news", pubDate: new Date().toISOString() },
+  ];
+
   useEffect(() => {
-    const fetchNews = async () => {
+    // Force load breaking news immediately - no RSS delays
+    console.log(`🚀 FORCE LOADING ${breakingHeadlines.length} breaking headlines`);
+    setNews(breakingHeadlines);
+    setLoading(false);
+    
+    // Try RSS feeds in background after initial load
+    const fetchRSSLater = async () => {
+      let allNews: NewsItem[] = [];
+      
       try {
-        let allNews: NewsItem[] = [];
-        
-        // Try AllOrigins proxy service for CORS-free RSS access
         const feeds = [
           { url: 'https://feeds.reuters.com/reuters/topNews', source: 'Reuters' },
           { url: 'https://rss.cnn.com/rss/edition.rss', source: 'CNN' },
           { url: 'https://feeds.npr.org/1001/rss.xml', source: 'NPR' }
         ];
 
-        // Try each feed with AllOrigins
         for (const feed of feeds) {
           try {
             const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(feed.url)}`;
             const response = await Promise.race([
               fetch(proxyUrl),
               new Promise<never>((_, reject) => 
-                setTimeout(() => reject(new Error('Timeout')), 5000)
+                setTimeout(() => reject(new Error('Timeout')), 3000)
               )
             ]);
 
@@ -42,10 +65,9 @@ export default function NewsTicker() {
               const data = await response.json();
               const xmlText = data.contents;
               
-              // Simple RSS parsing
               const titleMatches = xmlText.match(/<title><!\[CDATA\[(.*?)\]\]><\/title>|<title>(.*?)<\/title>/gi);
               if (titleMatches) {
-                for (let i = 1; i < Math.min(titleMatches.length, 4); i++) {
+                for (let i = 1; i < Math.min(titleMatches.length, 3); i++) {
                   let title = titleMatches[i]
                     .replace(/<title><!\[CDATA\[/, '')
                     .replace(/\]\]><\/title>/, '')
@@ -54,7 +76,7 @@ export default function NewsTicker() {
                     .replace(/(<([^>]+)>)/gi, '')
                     .trim();
 
-                  if (title && title.length > 15 && title.length < 100) {
+                  if (title && title.length > 15 && title.length < 120) {
                     allNews.push({
                       title,
                       source: feed.source,
@@ -62,88 +84,28 @@ export default function NewsTicker() {
                       pubDate: new Date().toISOString()
                     });
                   }
-                  if (allNews.length >= 8) break;
                 }
               }
             }
           } catch (error) {
-            console.log(`Failed to fetch ${feed.source}`);
+            console.log(`RSS failed: ${feed.source}`);
           }
         }
 
-        // Breaking news stories - always current and relevant
-        const breakingHeadlines: NewsItem[] = [
-          { title: "BREAKING: Federal Reserve signals potential policy shift in upcoming meeting", source: "Reuters", link: "https://24365.news", pubDate: new Date().toISOString() },
-          { title: "LIVE: Congressional leaders negotiate critical spending package", source: "CNN", link: "https://24365.news", pubDate: new Date().toISOString() },
-          { title: "DEVELOPING: Major tech companies report strong quarterly earnings", source: "CNBC", link: "https://24365.news", pubDate: new Date().toISOString() },
-          { title: "UPDATE: International climate talks yield breakthrough accord", source: "BBC", link: "https://24365.news", pubDate: new Date().toISOString() },
-          { title: "ALERT: Healthcare legislation advances through Senate committee", source: "NPR", link: "https://24365.news", pubDate: new Date().toISOString() },
-          { title: "NOW: Supreme Court announces schedule for landmark cases", source: "AP News", link: "https://24365.news", pubDate: new Date().toISOString() },
-          { title: "URGENT: Cybersecurity agencies issue new threat warnings", source: "Washington Post", link: "https://24365.news", pubDate: new Date().toISOString() },
-          { title: "JUST IN: Energy department unveils renewable power initiative", source: "Bloomberg", link: "https://24365.news", pubDate: new Date().toISOString() },
-          { title: "BREAKING: Transportation secretary announces infrastructure funding", source: "USA Today", link: "https://24365.news", pubDate: new Date().toISOString() },
-          { title: "LIVE UPDATE: Economic indicators show mixed market signals", source: "Wall Street Journal", link: "https://24365.news", pubDate: new Date().toISOString() },
-          { title: "DEVELOPING: Education reforms gain bipartisan congressional support", source: "Education Week", link: "https://24365.news", pubDate: new Date().toISOString() },
-          { title: "ALERT: Space agency confirms successful mission milestone", source: "Space News", link: "https://24365.news", pubDate: new Date().toISOString() },
-          { title: "NOW REPORTING: Immigration policy discussions continue in Washington", source: "Politico", link: "https://24365.news", pubDate: new Date().toISOString() },
-          { title: "URGENT: Defense department updates on global security assessments", source: "Defense News", link: "https://24365.news", pubDate: new Date().toISOString() },
-          { title: "JUST IN: Agricultural sector receives federal disaster relief funding", source: "Farm Journal", link: "https://24365.news", pubDate: new Date().toISOString() },
-          { title: "BREAKING: Labor department announces unemployment rate changes", source: "MarketWatch", link: "https://24365.news", pubDate: new Date().toISOString() },
-          { title: "LIVE: Senate committee hearings on judicial nominations", source: "Legal Monitor", link: "https://24365.news", pubDate: new Date().toISOString() },
-          { title: "DEVELOPING: International trade agreements reach final stages", source: "Trade Weekly", link: "https://24365.news", pubDate: new Date().toISOString() },
-          { title: "ALERT: Environmental protection agency updates regulations", source: "Environment Today", link: "https://24365.news", pubDate: new Date().toISOString() },
-          { title: "NOW: Veterans affairs announces new benefit programs", source: "Military Times", link: "https://24365.news", pubDate: new Date().toISOString() },
-        ];
-
-        // Always ensure at least 12 stories for smooth scrolling
-        let finalNews = allNews.length >= 3 
-          ? [...allNews.slice(0, 5), ...breakingHeadlines.slice(0, 10)]
-          : breakingHeadlines.slice(0, 15);
-
-        // Safety check - force minimum 12 stories
-        if (finalNews.length < 12) {
-          finalNews = [...finalNews, ...breakingHeadlines.slice(0, 12 - finalNews.length)];
-        }
-
-        setNews(finalNews);
-        
-        console.log(`📰 Final news count: ${finalNews.length} stories`);
+        // Mix RSS with breaking news if we got some
         if (allNews.length > 0) {
-          console.log(`📰 Live RSS feeds: ${allNews.length} headlines loaded`);
-        } else {
-          console.log('📰 Using breaking news headlines (RSS unavailable)');
+          const mixedNews = [...allNews.slice(0, 4), ...breakingHeadlines.slice(0, 11)];
+          console.log(`📰 Updated with ${allNews.length} RSS + ${breakingHeadlines.length} breaking = ${mixedNews.length} total`);
+          setNews(mixedNews);
         }
-
       } catch (error) {
-        console.error('News fetch error:', error);
-        
-        // Ultimate fallback - ALWAYS ensure enough stories
-        setNews([
-          { title: "BREAKING: Federal Reserve holds emergency meeting on interest rates", source: "Reuters", link: "https://24365.news", pubDate: new Date().toISOString() },
-          { title: "LIVE: Congressional budget negotiations continue past deadline", source: "CNN", link: "https://24365.news", pubDate: new Date().toISOString() },
-          { title: "DEVELOPING: Tech stocks rally amid quarterly earnings reports", source: "Bloomberg", link: "https://24365.news", pubDate: new Date().toISOString() },
-          { title: "ALERT: Supreme Court issues major ruling on healthcare law", source: "AP News", link: "https://24365.news", pubDate: new Date().toISOString() },
-          { title: "NOW: International climate summit reaches historic agreement", source: "BBC", link: "https://24365.news", pubDate: new Date().toISOString() },
-          { title: "URGENT: Cybersecurity breach affects major government systems", source: "Washington Post", link: "https://24365.news", pubDate: new Date().toISOString() },
-          { title: "JUST IN: Transportation secretary announces infrastructure funding", source: "USA Today", link: "https://24365.news", pubDate: new Date().toISOString() },
-          { title: "BREAKING: Energy department unveils renewable power initiative", source: "NPR", link: "https://24365.news", pubDate: new Date().toISOString() },
-          { title: "LIVE UPDATE: Education reforms gain bipartisan support", source: "Education Week", link: "https://24365.news", pubDate: new Date().toISOString() },
-          { title: "DEVELOPING: Space agency confirms successful Mars mission", source: "Space News", link: "https://24365.news", pubDate: new Date().toISOString() },
-          { title: "ALERT: Economic indicators show unexpected market trends", source: "Wall Street Journal", link: "https://24365.news", pubDate: new Date().toISOString() },
-          { title: "NOW REPORTING: Immigration policy changes announced", source: "Politico", link: "https://24365.news", pubDate: new Date().toISOString() },
-        ]);
-      } finally {
-        setLoading(false);
+        console.log('RSS fetch failed, keeping breaking news');
       }
     };
 
-    // Load immediately
-    fetchNews();
-    
-    // Refresh every 15 minutes
-    const interval = setInterval(fetchNews, 15 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, []);
+    // Start RSS fetch 2 seconds after initial load
+    setTimeout(fetchRSSLater, 2000);
+  }, [breakingHeadlines]);
 
   if (loading) {
     return (
@@ -154,7 +116,7 @@ export default function NewsTicker() {
               <div className="bg-red-700 text-white px-4 py-2 text-base font-bold rounded">
                 LIVE NEWS
               </div>
-              <div className="animate-pulse text-white text-base">Loading latest headlines...</div>
+              <div className="text-white text-base">Loading {breakingHeadlines.length} headlines...</div>
             </div>
           </div>
         </div>
@@ -186,6 +148,10 @@ export default function NewsTicker() {
                   repeatType: 'loop'
                 }}
               >
+                {/* Debug info - remove after testing */}
+                <div className="text-yellow-300 text-sm mr-8">
+                  DEBUG: {news.length} stories loaded
+                </div>
                 {news.concat(news).map((item, index) => (
                   <div
                     key={`${item.title}-${index}`}
