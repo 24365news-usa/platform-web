@@ -136,32 +136,51 @@ export default async function DashboardPage() {
           
           {userVideos.length > 0 ? (
             <div className="grid gap-4">
-              {userVideos.slice(0, 5).map((video: any) => (
-                <div key={video.id} className="bg-slate-800 border border-slate-700 rounded-lg p-4 flex items-center gap-4">
-                  {video.thumbnail_url && (
-                    <img 
-                      src={video.thumbnail_url} 
-                      alt={video.title}
-                      className="w-24 h-16 object-cover rounded"
-                    />
-                  )}
-                  <div className="flex-1">
-                    <h3 className="font-semibold">{video.title}</h3>
-                    <p className="text-slate-400 text-sm">{video.description}</p>
-                    <div className="flex items-center gap-4 mt-2 text-sm text-slate-500">
-                      <span>{video.view_count || 0} views</span>
-                      <span>{new Date(video.created_at).toLocaleDateString()}</span>
-                      <span className="capitalize">{video.status}</span>
+              {userVideos.slice(0, 5).map((video: any) => {
+                // Generate thumbnail URL from playback_id if available
+                const thumbnailUrl = video.thumbnail_url || 
+                  (video.mux_playback_id 
+                    ? `https://image.mux.com/${video.mux_playback_id}/thumbnail.jpg?width=320&height=180&fit_mode=smartcrop`
+                    : null);
+                    
+                return (
+                  <div key={video.id} className="bg-slate-800 border border-slate-700 rounded-lg p-4 flex items-center gap-4">
+                    <div className="w-24 h-16 bg-slate-900 rounded overflow-hidden flex-shrink-0">
+                      {thumbnailUrl ? (
+                        <img 
+                          src={thumbnailUrl} 
+                          alt={video.title}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            // Fallback to video icon if thumbnail fails to load
+                            const target = e.target as HTMLImageElement;
+                            target.style.display = 'none';
+                            target.nextSibling && (target.nextSibling as HTMLElement).style.display = 'flex';
+                          }}
+                        />
+                      ) : null}
+                      <div className="w-full h-full flex items-center justify-center text-slate-600 text-2xl" style={{display: thumbnailUrl ? 'none' : 'flex'}}>
+                        📹
+                      </div>
                     </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold">{video.title}</h3>
+                      <p className="text-slate-400 text-sm">{video.description}</p>
+                      <div className="flex items-center gap-4 mt-2 text-sm text-slate-500">
+                        <span>{video.view_count || 0} views</span>
+                        <span>{new Date(video.created_at).toLocaleDateString()}</span>
+                        <span className="capitalize">{video.status}</span>
+                      </div>
+                    </div>
+                    <Link
+                      href={`/watch/${video.id}`}
+                      className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm transition"
+                    >
+                      Watch
+                    </Link>
                   </div>
-                  <Link
-                    href={`/watch/${video.id}`}
-                    className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded text-sm transition"
-                  >
-                    Watch
-                  </Link>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-12 text-center">

@@ -30,6 +30,11 @@ export async function POST(request: NextRequest) {
 
       console.log("Asset ready:", { assetId, playbackId, uploadId });
 
+      // Generate thumbnail URL
+      const thumbnailUrl = playbackId 
+        ? `https://image.mux.com/${playbackId}/thumbnail.jpg?width=640&height=360&fit_mode=smartcrop`
+        : null;
+
       // Update video record by upload_id
       const { data: video, error } = await supabase
         .from("videos")
@@ -37,6 +42,7 @@ export async function POST(request: NextRequest) {
           mux_asset_id: assetId,
           mux_playback_id: playbackId,
           duration: duration,
+          thumbnail_url: thumbnailUrl,
           status: "ready",
         })
         .eq("mux_upload_id", uploadId)
