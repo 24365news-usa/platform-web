@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 
 interface NewsItem {
   title: string;
@@ -12,6 +13,7 @@ interface NewsItem {
 export default function NewsTicker() {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
     const fetchNews = async () => {
@@ -168,9 +170,23 @@ export default function NewsTicker() {
             <div className="bg-red-700 text-white px-4 py-2 text-base font-bold rounded shrink-0">
               LIVE NEWS
             </div>
-            <div className="flex-1 overflow-hidden">
-              <div className="animate-scroll ticker-smooth flex whitespace-nowrap" style={{ gap: '4rem' }}>
-                {news.concat(news).concat(news).map((item, index) => (
+            <div 
+              className="flex-1 overflow-hidden"
+              onMouseEnter={() => setIsPaused(true)}
+              onMouseLeave={() => setIsPaused(false)}
+            >
+              <motion.div
+                className="flex whitespace-nowrap"
+                style={{ gap: '4rem' }}
+                animate={isPaused ? {} : { x: ['0%', '-50%'] }}
+                transition={{
+                  duration: 8,
+                  ease: 'linear',
+                  repeat: Infinity,
+                  repeatType: 'loop'
+                }}
+              >
+                {news.concat(news).map((item, index) => (
                   <div
                     key={`${item.title}-${index}`}
                     className="inline-flex items-center text-white shrink-0"
@@ -181,7 +197,7 @@ export default function NewsTicker() {
                     <span className="text-red-400 text-lg ml-4">•</span>
                   </div>
                 ))}
-              </div>
+              </motion.div>
             </div>
           </div>
         </div>

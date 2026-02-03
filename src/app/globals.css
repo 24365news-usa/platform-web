@@ -38,29 +38,4 @@ body {
   border-image: linear-gradient(90deg, var(--patriot-red) 0%, var(--patriot-blue) 100%) 1;
 }
 
-/* News ticker scrolling animation */
-@keyframes scroll {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
-}
-
-.animate-scroll {
-  animation: scroll 25s linear infinite;
-  animation-fill-mode: forwards;
-  will-change: transform;
-}
-
-.animate-scroll:hover {
-  animation-play-state: paused;
-}
-
-/* Smoother scrolling with GPU acceleration */
-.ticker-smooth {
-  backface-visibility: hidden;
-  perspective: 1000px;
-  transform: translateZ(0);
-}
+/* Framer Motion handles the news ticker animation now */
