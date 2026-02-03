@@ -1,15 +1,36 @@
 import Link from "next/link";
 import { Search, Filter, TrendingUp } from "lucide-react";
 import VideoGrid from "@/components/VideoGrid";
+import { createClient } from "@supabase/supabase-js";
 
-// This will be replaced with actual data fetching from Supabase
-async function getPublishedVideos() {
-  // Return empty array for now - will fetch from Supabase when configured
-  return [];
+async function getVideos() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  
+  if (!supabaseUrl || !supabaseKey) {
+    return [];
+  }
+  
+  const supabase = createClient(supabaseUrl, supabaseKey);
+  
+  // Get all ready videos (for now, show all - later filter by is_published)
+  const { data, error } = await supabase
+    .from("videos")
+    .select("*")
+    .eq("status", "ready")
+    .order("created_at", { ascending: false })
+    .limit(50);
+  
+  if (error) {
+    console.error("Error fetching videos:", error);
+    return [];
+  }
+  
+  return data || [];
 }
 
 export default async function WatchPage() {
-  const videos = await getPublishedVideos();
+  const videos = await getVideos();
 
   return (
     <div className="min-h-screen bg-slate-900 text-white">

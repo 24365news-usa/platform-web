@@ -1,22 +1,36 @@
 import Link from "next/link";
 import { ArrowLeft, Eye, Clock, Share2, ThumbsUp } from "lucide-react";
 import VideoPlayer from "@/components/VideoPlayer";
+import { createClient } from "@supabase/supabase-js";
+import { notFound } from "next/navigation";
 
-// This will be replaced with actual data fetching from Supabase
 async function getVideo(id: string) {
-  // Mock data for now
-  return {
-    id,
-    title: "Sample Video",
-    description: "This is a sample video description. When the platform is live, this will show real content from citizen journalists.",
-    user_name: "Contributor",
-    user_id: "user_123",
-    mux_playback_id: null, // Will be real playback ID when video is uploaded
-    view_count: 0,
-    duration: 120,
-    created_at: new Date().toISOString(),
-    is_published: true,
-  };
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  
+  if (!supabaseUrl || !supabaseKey) {
+    return null;
+  }
+  
+  const supabase = createClient(supabaseUrl, supabaseKey);
+  
+  const { data, error } = await supabase
+    .from("videos")
+    .select("*")
+    .eq("id", id)
+    .single();
+  
+  if (error || !data) {
+    return null;
+  }
+  
+  // Increment view count
+  await supabase
+    .from("videos")
+    .update({ view_count: (data.view_count || 0) + 1 })
+    .eq("id", id);
+  
+  return data;
 }
 
 function formatDuration(seconds?: number): string {
@@ -33,6 +47,10 @@ export default async function VideoPage({
 }) {
   const { id } = await params;
   const video = await getVideo(id);
+
+  if (!video) {
+    notFound();
+  }
 
   return (
     <div className="min-h-screen bg-slate-900 text-white">
