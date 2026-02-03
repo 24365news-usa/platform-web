@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { Search, TrendingUp, Home } from "lucide-react";
 import VideoGrid from "@/components/VideoGrid";
+import LocationFilter from "@/components/LocationFilter";
 import { createClient } from "@supabase/supabase-js";
 
 const CATEGORIES = [
   { id: "all", label: "All" },
   { id: "breaking", label: "Breaking" },
   { id: "politics", label: "Politics" },
-  { id: "local", label: "Local" },
+  // "local" is handled by LocationFilter dropdown
   { id: "weather", label: "Weather" },
   { id: "sports", label: "Sports" },
   { id: "business", label: "Business" },
@@ -16,7 +17,13 @@ const CATEGORIES = [
   { id: "health", label: "Health" },
 ];
 
-async function getVideos(category?: string) {
+interface VideoFilters {
+  category?: string;
+  state?: string;
+  city?: string;
+}
+
+async function getVideos(filters: VideoFilters) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -34,8 +41,18 @@ async function getVideos(category?: string) {
     .limit(50);
 
   // Filter by category if specified (and not "all")
-  if (category && category !== "all") {
-    query = query.eq("category", category);
+  if (filters.category && filters.category !== "all") {
+    query = query.eq("category", filters.category);
+  }
+
+  // Filter by state
+  if (filters.state) {
+    query = query.eq("state", filters.state);
+  }
+
+  // Filter by city
+  if (filters.city) {
+    query = query.eq("city", filters.city);
   }
 
   const { data, error } = await query;
@@ -48,14 +65,60 @@ async function getVideos(category?: string) {
   return data || [];
 }
 
+async function getAvailableLocations() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseKey) {
+    return [];
+  }
+
+  const supabase = createClient(supabaseUrl, supabaseKey);
+
+  const { data, error } = await supabase
+    .from("videos")
+    .select("state, city")
+    .eq("status", "ready")
+    .not("state", "is", null);
+
+  if (error) {
+    return [];
+  }
+
+  // Group cities by state
+  const locationMap = new Map<string, Set<string>>();
+
+  for (const video of data || []) {
+    if (video.state) {
+      if (!locationMap.has(video.state)) {
+        locationMap.set(video.state, new Set());
+      }
+      if (video.city) {
+        locationMap.get(video.state)!.add(video.city);
+      }
+    }
+  }
+
+  return Array.from(locationMap.entries()).map(([state, cities]) => ({
+    state,
+    cities: Array.from(cities).sort(),
+  }));
+}
+
 export default async function WatchPage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string }>;
+  searchParams: Promise<{ category?: string; state?: string; city?: string }>;
 }) {
   const params = await searchParams;
   const currentCategory = params.category || "all";
-  const videos = await getVideos(currentCategory);
+  const currentState = params.state;
+  const currentCity = params.city;
+  
+  const [videos, availableLocations] = await Promise.all([
+    getVideos({ category: currentCategory, state: currentState, city: currentCity }),
+    getAvailableLocations(),
+  ]);
 
   return (
     <div className="min-h-screen bg-slate-900 text-white">
@@ -100,12 +163,29 @@ export default async function WatchPage({
       <main className="max-w-7xl mx-auto px-4 py-8">
         {/* Categories */}
         <div className="flex flex-wrap gap-2 mb-8">
-          {CATEGORIES.map((cat) => (
+          {CATEGORIES.slice(0, 3).map((cat) => (
             <Link
               key={cat.id}
               href={cat.id === "all" ? "/watch" : `/watch?category=${cat.id}`}
               className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                currentCategory === cat.id
+                currentCategory === cat.id && !currentState
+                  ? "bg-red-600 text-white"
+                  : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+              }`}
+            >
+              {cat.label}
+            </Link>
+          ))}
+          
+          {/* Local dropdown with states/cities */}
+          <LocationFilter availableLocations={availableLocations} />
+          
+          {CATEGORIES.slice(3).map((cat) => (
+            <Link
+              key={cat.id}
+              href={`/watch?category=${cat.id}`}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+                currentCategory === cat.id && !currentState
                   ? "bg-red-600 text-white"
                   : "bg-slate-800 text-slate-300 hover:bg-slate-700"
               }`}
@@ -120,9 +200,14 @@ export default async function WatchPage({
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp className="w-5 h-5 text-red-500" />
             <h2 className="text-xl font-semibold">
-              {currentCategory === "all"
+              {currentCity && currentState
+                ? `${currentCity}, ${currentState}`
+                : currentState
+                ? `${currentState} News`
+                : currentCategory === "all"
                 ? "All Videos"
-                : CATEGORIES.find((c) => c.id === currentCategory)?.label || "Videos"}
+                : CATEGORIES.find((c) => c.id === currentCategory)?.label || 
+                  currentCategory.charAt(0).toUpperCase() + currentCategory.slice(1)}
             </h2>
           </div>
 
