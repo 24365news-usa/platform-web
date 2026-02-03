@@ -1,14 +1,14 @@
 import Link from "next/link";
-import { Search, TrendingUp, Home } from "lucide-react";
+import { TrendingUp, Home } from "lucide-react";
 import VideoGrid from "@/components/VideoGrid";
-import LocationFilter from "@/components/LocationFilter";
+import CategoryFilter from "@/components/CategoryFilter";
 import { createClient } from "@supabase/supabase-js";
 
 const CATEGORIES = [
   { id: "all", label: "All" },
   { id: "breaking", label: "Breaking" },
   { id: "politics", label: "Politics" },
-  // "local" is handled by LocationFilter dropdown
+  { id: "local", label: "Local" },
   { id: "weather", label: "Weather" },
   { id: "sports", label: "Sports" },
   { id: "business", label: "Business" },
@@ -40,17 +40,17 @@ async function getVideos(filters: VideoFilters) {
     .order("created_at", { ascending: false })
     .limit(50);
 
-  // If filtering by location, show ALL videos from that location (any category)
-  // If filtering by category only, filter by category
-  if (filters.state) {
-    // Location filter - ignore category, show all from this location
-    query = query.eq("state", filters.state);
-    if (filters.city) {
-      query = query.eq("city", filters.city);
-    }
-  } else if (filters.category && filters.category !== "all" && filters.category !== "local") {
-    // Category filter only (not location-based)
+  // Filter by category (if not "all")
+  if (filters.category && filters.category !== "all") {
     query = query.eq("category", filters.category);
+  }
+
+  // Filter by location (within the category)
+  if (filters.state) {
+    query = query.eq("state", filters.state);
+  }
+  if (filters.city) {
+    query = query.eq("city", filters.city);
   }
 
   const { data, error } = await query;
@@ -63,7 +63,7 @@ async function getVideos(filters: VideoFilters) {
   return data || [];
 }
 
-async function getAvailableLocations() {
+async function getAvailableLocations(category?: string) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
@@ -73,11 +73,18 @@ async function getAvailableLocations() {
 
   const supabase = createClient(supabaseUrl, supabaseKey);
 
-  const { data, error } = await supabase
+  let query = supabase
     .from("videos")
     .select("state, city")
     .eq("status", "ready")
     .not("state", "is", null);
+
+  // Filter by category to show only locations with videos in this category
+  if (category && category !== "all") {
+    query = query.eq("category", category);
+  }
+
+  const { data, error } = await query;
 
   if (error) {
     return [];
@@ -112,11 +119,27 @@ export default async function WatchPage({
   const currentCategory = params.category || "all";
   const currentState = params.state;
   const currentCity = params.city;
-  
+
   const [videos, availableLocations] = await Promise.all([
     getVideos({ category: currentCategory, state: currentState, city: currentCity }),
-    getAvailableLocations(),
+    getAvailableLocations(currentCategory),
   ]);
+
+  // Get title based on filters
+  const getPageTitle = () => {
+    const categoryLabel = CATEGORIES.find((c) => c.id === currentCategory)?.label || "Videos";
+    
+    if (currentCity && currentState) {
+      return `${categoryLabel} in ${currentCity}, ${currentState}`;
+    }
+    if (currentState) {
+      return `${categoryLabel} in ${currentState}`;
+    }
+    if (currentCategory === "all") {
+      return "All Videos";
+    }
+    return categoryLabel;
+  };
 
   return (
     <div className="min-h-screen bg-slate-900 text-white">
@@ -127,18 +150,6 @@ export default async function WatchPage({
             <span className="text-2xl font-bold text-red-500">24365</span>
             <span className="text-2xl font-light">.News</span>
           </Link>
-
-          {/* Search bar */}
-          <div className="flex-1 max-w-xl">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-              <input
-                type="search"
-                placeholder="Search news..."
-                className="w-full bg-slate-800 border border-slate-700 rounded-full pl-10 pr-4 py-2 focus:outline-none focus:border-red-500 transition"
-              />
-            </div>
-          </div>
 
           <div className="flex items-center gap-4 flex-shrink-0">
             <Link
@@ -159,40 +170,24 @@ export default async function WatchPage({
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
-        {/* Categories */}
+        {/* Categories with location dropdowns */}
         <div className="flex flex-wrap gap-2 mb-8">
           {CATEGORIES.map((cat) => (
-            <Link
+            <CategoryFilter
               key={cat.id}
-              href={cat.id === "all" ? "/watch" : `/watch?category=${cat.id}`}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                currentCategory === cat.id && !currentState
-                  ? "bg-red-600 text-white"
-                  : "bg-slate-800 text-slate-300 hover:bg-slate-700"
-              }`}
-            >
-              {cat.label}
-            </Link>
+              category={cat}
+              availableLocations={availableLocations}
+              isActive={currentCategory === cat.id}
+              showLocationFilter={cat.id !== "all"}
+            />
           ))}
-          
-          {/* Local dropdown with states/cities */}
-          <LocationFilter availableLocations={availableLocations} />
         </div>
 
         {/* Videos section */}
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp className="w-5 h-5 text-red-500" />
-            <h2 className="text-xl font-semibold">
-              {currentCity && currentState
-                ? `${currentCity}, ${currentState}`
-                : currentState
-                ? `${currentState} News`
-                : currentCategory === "all"
-                ? "All Videos"
-                : CATEGORIES.find((c) => c.id === currentCategory)?.label || 
-                  currentCategory.charAt(0).toUpperCase() + currentCategory.slice(1)}
-            </h2>
+            <h2 className="text-xl font-semibold">{getPageTitle()}</h2>
           </div>
 
           {videos.length > 0 ? (
@@ -200,21 +195,27 @@ export default async function WatchPage({
           ) : (
             <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-16 text-center">
               <div className="text-6xl mb-4">
-                {currentCategory === "weather" ? "🌤️" : 
-                 currentCategory === "politics" ? "🏛️" :
-                 currentCategory === "sports" ? "⚽" :
-                 currentCategory === "breaking" ? "🚨" :
-                 currentCategory === "local" ? "📍" : "🎬"}
+                {currentCategory === "weather"
+                  ? "🌤️"
+                  : currentCategory === "politics"
+                  ? "🏛️"
+                  : currentCategory === "sports"
+                  ? "⚽"
+                  : currentCategory === "breaking"
+                  ? "🚨"
+                  : currentCategory === "local"
+                  ? "📍"
+                  : "🎬"}
               </div>
               <h3 className="text-2xl font-semibold mb-2">
-                {currentCategory === "all" 
-                  ? "Coming Soon" 
-                  : `No ${CATEGORIES.find((c) => c.id === currentCategory)?.label} Videos Yet`}
+                {currentState
+                  ? `No ${CATEGORIES.find((c) => c.id === currentCategory)?.label || ""} videos from ${currentCity || currentState} yet`
+                  : currentCategory === "all"
+                  ? "Coming Soon"
+                  : `No ${CATEGORIES.find((c) => c.id === currentCategory)?.label} videos yet`}
               </h3>
               <p className="text-slate-400 max-w-md mx-auto mb-6">
-                {currentCategory === "all"
-                  ? "Our network of citizen journalists is getting ready to launch. Be among the first to share your stories."
-                  : "Be the first to upload a video in this category!"}
+                Be the first to upload content in this category!
               </p>
               <Link
                 href="/upload"
