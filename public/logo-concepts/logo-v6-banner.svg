@@ -1,0 +1,23 @@
+<svg width="500" height="140" viewBox="0 0 500 140" xmlns="http://www.w3.org/2000/svg">
+  <!-- Banner style with tagline -->
+  
+  <!-- Top banner stripe -->
+  <rect x="0" y="0" width="500" height="8" fill="#DC2626"/>
+  
+  <!-- Main content area -->
+  <rect x="0" y="8" width="500" height="100" fill="#1E293B"/>
+  
+  <!-- Stars accent -->
+  <text x="20" y="40" font-size="14" fill="#2563EB">★ ★ ★</text>
+  <text x="420" y="40" font-size="14" fill="#2563EB">★ ★ ★</text>
+  
+  <!-- Main text centered -->
+  <text x="250" y="70" font-family="Arial Black, sans-serif" font-size="48" font-weight="900" fill="#DC2626" text-anchor="middle">24365</text>
+  <text x="250" y="70" font-family="Arial Black, sans-serif" font-size="48" font-weight="900" fill="#FFFFFF" text-anchor="middle" dx="150">.News</text>
+  
+  <!-- Tagline centered -->
+  <text x="250" y="95" font-family="Georgia, serif" font-size="14" font-style="italic" fill="#94A3B8" text-anchor="middle">News for the people, by the people</text>
+  
+  <!-- Bottom banner stripe -->
+  <rect x="0" y="108" width="500" height="8" fill="#2563EB"/>
+</svg>
