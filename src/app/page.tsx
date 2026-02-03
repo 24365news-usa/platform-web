@@ -41,9 +41,11 @@ export default function Home() {
             News That Never Sleeps
           </h1>
           <p className="text-xl text-slate-300 max-w-3xl mx-auto mb-8">
-            A distributed network of citizen journalists covering stories 
-            <span className="text-red-500 font-semibold"> 24 hours a day</span>, 
-            <span className="text-blue-400 font-semibold"> 365 days a year</span>.
+            A distributed network of citizen journalists covering stories.
+            <br />
+            <span className="text-red-500 font-semibold">24 hours a day</span>, 
+            <span className="text-blue-400 font-semibold">365 days a year</span>.
+            <br />
             Real people. Real stories. Real news.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
