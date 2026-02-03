@@ -49,9 +49,18 @@ body {
 }
 
 .animate-scroll {
-  animation: scroll 8s linear infinite;
+  animation: scroll 25s linear infinite;
+  animation-fill-mode: forwards;
+  will-change: transform;
 }
 
 .animate-scroll:hover {
   animation-play-state: paused;
+}
+
+/* Smoother scrolling with GPU acceleration */
+.ticker-smooth {
+  backface-visibility: hidden;
+  perspective: 1000px;
+  transform: translateZ(0);
 }

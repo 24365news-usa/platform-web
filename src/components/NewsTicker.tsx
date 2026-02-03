@@ -169,19 +169,17 @@ export default function NewsTicker() {
               LIVE NEWS
             </div>
             <div className="flex-1 overflow-hidden">
-              <div className="animate-scroll flex gap-12 whitespace-nowrap">
-                {news.concat(news).map((item, index) => (
-                  <a
-                    key={`${item.link}-${index}`}
-                    href={item.link}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-3 text-white hover:text-red-200 transition shrink-0"
+              <div className="animate-scroll ticker-smooth flex whitespace-nowrap" style={{ gap: '4rem' }}>
+                {news.concat(news).concat(news).map((item, index) => (
+                  <div
+                    key={`${item.title}-${index}`}
+                    className="inline-flex items-center text-white shrink-0"
+                    style={{ gap: '0.75rem' }}
                   >
                     <span className="text-red-300 font-semibold text-base">{item.source}:</span>
                     <span className="text-base">{item.title}</span>
-                    <span className="text-red-400 text-lg">•</span>
-                  </a>
+                    <span className="text-red-400 text-lg ml-4">•</span>
+                  </div>
                 ))}
               </div>
             </div>
