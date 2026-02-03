@@ -20,14 +20,40 @@ const US_STATES = [
 export default function ApplyPage() {
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    state: "",
+    socialLinks: "",
+    bio: "",
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    // Simulate submission - will be replaced with real API
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setSubmitted(true);
-    setIsSubmitting(false);
+    setError(null);
+
+    try {
+      const response = await fetch("/api/applications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to submit application");
+      }
+
+      setSubmitted(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to submit application");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -93,6 +119,12 @@ export default function ApplyPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="bg-slate-800 border border-slate-700 rounded-lg p-8">
+              {error && (
+                <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg mb-6">
+                  {error}
+                </div>
+              )}
+
               <div className="grid md:grid-cols-2 gap-6 mb-6">
                 <div>
                   <label className="block text-sm font-medium mb-2">
@@ -101,6 +133,8 @@ export default function ApplyPage() {
                   <input
                     type="text"
                     required
+                    value={formData.firstName}
+                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                     className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 transition"
                     placeholder="John"
                   />
@@ -112,6 +146,8 @@ export default function ApplyPage() {
                   <input
                     type="text"
                     required
+                    value={formData.lastName}
+                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                     className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 transition"
                     placeholder="Doe"
                   />
@@ -125,6 +161,8 @@ export default function ApplyPage() {
                 <input
                   type="email"
                   required
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 transition"
                   placeholder="john@example.com"
                 />
@@ -136,6 +174,8 @@ export default function ApplyPage() {
                 </label>
                 <select
                   required
+                  value={formData.state}
+                  onChange={(e) => setFormData({ ...formData, state: e.target.value })}
                   className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 transition"
                 >
                   <option value="">Select your state...</option>
@@ -153,6 +193,8 @@ export default function ApplyPage() {
                 </label>
                 <input
                   type="text"
+                  value={formData.socialLinks}
+                  onChange={(e) => setFormData({ ...formData, socialLinks: e.target.value })}
                   className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 transition"
                   placeholder="YouTube, Twitter, TikTok, website, etc."
                 />
@@ -165,6 +207,8 @@ export default function ApplyPage() {
                 <textarea
                   required
                   rows={4}
+                  value={formData.bio}
+                  onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
                   className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 transition resize-none"
                   placeholder="What topics do you cover? Why do you want to join 24365.News? What's your experience with journalism or content creation?"
                 />

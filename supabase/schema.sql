@@ -1,6 +1,34 @@
 -- 24365.News Database Schema
 -- Run this in Supabase SQL Editor
 
+-- Applications table (contributor applications)
+CREATE TABLE IF NOT EXISTS applications (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+  
+  -- Applicant info
+  first_name TEXT NOT NULL,
+  last_name TEXT NOT NULL,
+  email TEXT NOT NULL,
+  state TEXT NOT NULL,
+  social_links TEXT,
+  bio TEXT NOT NULL,
+  
+  -- Status: pending, approved, rejected
+  status TEXT NOT NULL DEFAULT 'pending',
+  reviewed_at TIMESTAMP WITH TIME ZONE,
+  reviewer_notes TEXT
+);
+
+CREATE INDEX IF NOT EXISTS idx_applications_email ON applications(email);
+CREATE INDEX IF NOT EXISTS idx_applications_status ON applications(status);
+
+CREATE OR REPLACE TRIGGER update_applications_updated_at
+  BEFORE UPDATE ON applications
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
 -- Videos table
 CREATE TABLE IF NOT EXISTS videos (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
