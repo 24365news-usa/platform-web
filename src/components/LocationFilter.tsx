@@ -35,11 +35,9 @@ export default function LocationFilter({ availableLocations }: LocationFilterPro
 
   const handleStateClick = (state: string) => {
     if (expandedState === state) {
-      // Select state (all cities)
-      const params = new URLSearchParams(searchParams);
-      params.set("category", "local");
+      // Select state (all cities) - shows ALL videos from this state
+      const params = new URLSearchParams();
       params.set("state", state);
-      params.delete("city");
       router.push(`/watch?${params.toString()}`);
       setIsOpen(false);
     } else {
@@ -48,8 +46,8 @@ export default function LocationFilter({ availableLocations }: LocationFilterPro
   };
 
   const handleCityClick = (state: string, city: string) => {
-    const params = new URLSearchParams(searchParams);
-    params.set("category", "local");
+    // Shows ALL videos from this city (any category)
+    const params = new URLSearchParams();
     params.set("state", state);
     params.set("city", city);
     router.push(`/watch?${params.toString()}`);
@@ -80,7 +78,7 @@ export default function LocationFilter({ availableLocations }: LocationFilterPro
     return "Local";
   };
 
-  const hasActiveFilter = currentState || currentCity;
+  const hasActiveFilter = !!currentState;
 
   return (
     <div className="relative" ref={dropdownRef}>
@@ -148,10 +146,8 @@ export default function LocationFilter({ availableLocations }: LocationFilterPro
                     <div className="ml-4 border-l border-slate-700 pl-2 mb-2">
                       <button
                         onClick={() => {
-                          const params = new URLSearchParams(searchParams);
-                          params.set("category", "local");
+                          const params = new URLSearchParams();
                           params.set("state", state.name);
-                          params.delete("city");
                           router.push(`/watch?${params.toString()}`);
                           setIsOpen(false);
                         }}

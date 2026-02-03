@@ -40,19 +40,17 @@ async function getVideos(filters: VideoFilters) {
     .order("created_at", { ascending: false })
     .limit(50);
 
-  // Filter by category if specified (and not "all")
-  if (filters.category && filters.category !== "all") {
-    query = query.eq("category", filters.category);
-  }
-
-  // Filter by state
+  // If filtering by location, show ALL videos from that location (any category)
+  // If filtering by category only, filter by category
   if (filters.state) {
+    // Location filter - ignore category, show all from this location
     query = query.eq("state", filters.state);
-  }
-
-  // Filter by city
-  if (filters.city) {
-    query = query.eq("city", filters.city);
+    if (filters.city) {
+      query = query.eq("city", filters.city);
+    }
+  } else if (filters.category && filters.category !== "all" && filters.category !== "local") {
+    // Category filter only (not location-based)
+    query = query.eq("category", filters.category);
   }
 
   const { data, error } = await query;
@@ -163,7 +161,7 @@ export default async function WatchPage({
       <main className="max-w-7xl mx-auto px-4 py-8">
         {/* Categories */}
         <div className="flex flex-wrap gap-2 mb-8">
-          {CATEGORIES.slice(0, 3).map((cat) => (
+          {CATEGORIES.map((cat) => (
             <Link
               key={cat.id}
               href={cat.id === "all" ? "/watch" : `/watch?category=${cat.id}`}
@@ -179,20 +177,6 @@ export default async function WatchPage({
           
           {/* Local dropdown with states/cities */}
           <LocationFilter availableLocations={availableLocations} />
-          
-          {CATEGORIES.slice(3).map((cat) => (
-            <Link
-              key={cat.id}
-              href={`/watch?category=${cat.id}`}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition ${
-                currentCategory === cat.id && !currentState
-                  ? "bg-red-600 text-white"
-                  : "bg-slate-800 text-slate-300 hover:bg-slate-700"
-              }`}
-            >
-              {cat.label}
-            </Link>
-          ))}
         </div>
 
         {/* Videos section */}
