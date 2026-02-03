@@ -1,0 +1,20 @@
+<svg width="450" height="100" viewBox="0 0 450 100" xmlns="http://www.w3.org/2000/svg">
+  <!-- Shield/badge style -->
+  
+  <!-- Shield shape -->
+  <path d="M10 15 L50 10 L90 15 L90 60 Q50 90 10 60 Z" fill="none" stroke="#DC2626" stroke-width="3"/>
+  
+  <!-- Inner stripes -->
+  <rect x="20" y="25" width="60" height="8" fill="#DC2626"/>
+  <rect x="20" y="40" width="60" height="8" fill="#FFFFFF"/>
+  <rect x="20" y="55" width="60" height="8" fill="#2563EB"/>
+  
+  <!-- Main text -->
+  <text x="110" y="55" font-family="Arial Black, sans-serif" font-size="42" fill="#DC2626">24</text>
+  <text x="165" y="55" font-family="Arial Black, sans-serif" font-size="42" fill="#FFFFFF">365</text>
+  <text x="260" y="55" font-family="Arial, sans-serif" font-size="42" font-weight="300" fill="#94A3B8">.</text>
+  <text x="275" y="55" font-family="Arial, sans-serif" font-size="42" font-weight="600" fill="#FFFFFF">News</text>
+  
+  <!-- Subtitle -->
+  <text x="110" y="78" font-family="Arial, sans-serif" font-size="11" fill="#64748B" letter-spacing="2">CITIZEN JOURNALISM NETWORK</text>
+</svg>
