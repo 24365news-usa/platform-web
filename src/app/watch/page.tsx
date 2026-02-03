@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { TrendingUp, Home } from "lucide-react";
+import { TrendingUp } from "lucide-react";
 import VideoGrid from "@/components/VideoGrid";
 import CategoryFilter from "@/components/CategoryFilter";
+import Navigation from "@/components/Navigation";
 import { createClient } from "@supabase/supabase-js";
 
 const CATEGORIES = [
@@ -143,31 +144,9 @@ export default async function WatchPage({
 
   return (
     <div className="min-h-screen bg-slate-900 text-white">
-      {/* Header */}
-      <header className="border-b border-slate-700 sticky top-0 bg-slate-900/95 backdrop-blur z-10">
-        <nav className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
-          <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-            <span className="text-2xl font-bold text-red-500">24365</span>
-            <span className="text-2xl font-light">.News</span>
-          </Link>
-
-          <div className="flex items-center gap-4 flex-shrink-0">
-            <Link
-              href="/"
-              className="text-slate-300 hover:text-white transition flex items-center gap-1"
-            >
-              <Home className="w-4 h-4" />
-              Home
-            </Link>
-            <Link
-              href="/dashboard"
-              className="text-slate-300 hover:text-white transition hidden sm:block"
-            >
-              Dashboard
-            </Link>
-          </div>
-        </nav>
-      </header>
+      <div className="sticky top-0 bg-slate-900/95 backdrop-blur z-10">
+        <Navigation />
+      </div>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         {/* Categories with location dropdowns */}

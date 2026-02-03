@@ -1,38 +1,11 @@
 import Link from "next/link";
 import { Video, Users, Globe, ArrowRight, Star } from "lucide-react";
+import Navigation from "@/components/Navigation";
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#0a1628] to-[#1a2744] text-white">
-      {/* Header */}
-      <header className="border-b border-blue-900/50">
-        <nav className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <Link href="/" className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-red-600">24365</span>
-            <span className="text-2xl font-light text-white">.News</span>
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link 
-              href="/watch" 
-              className="text-slate-300 hover:text-white transition"
-            >
-              Watch
-            </Link>
-            <Link 
-              href="/sign-in" 
-              className="text-slate-300 hover:text-white transition"
-            >
-              Sign In
-            </Link>
-            <Link 
-              href="/sign-up"
-              className="bg-red-700 hover:bg-red-600 px-4 py-2 rounded-lg transition"
-            >
-              Join Us
-            </Link>
-          </div>
-        </nav>
-      </header>
+      <Navigation />
 
       {/* Hero */}
       <main>
