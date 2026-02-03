@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { Upload, Video, Eye, Clock } from "lucide-react";
+import { Upload, Video, Eye, Clock, Home, Play } from "lucide-react";
+import { currentUser } from "@clerk/nextjs/server";
 
-export default function DashboardPage() {
-  // TODO: Replace with Clerk auth when credentials are configured
-  const user = { firstName: "Contributor" };
+export default async function DashboardPage() {
+  const user = await currentUser();
+  const firstName = user?.firstName || "Contributor";
   
   return (
     <div className="min-h-screen bg-slate-900 text-white">
@@ -15,20 +16,22 @@ export default function DashboardPage() {
             <span className="text-2xl font-light">.News</span>
           </Link>
           <div className="flex items-center gap-4">
-            <span className="text-slate-400">
-              Welcome, {user.firstName}
+            <Link href="/" className="text-slate-400 hover:text-white transition flex items-center gap-1">
+              <Home className="w-4 h-4" />
+              Home
+            </Link>
+            <Link href="/watch" className="text-slate-400 hover:text-white transition flex items-center gap-1">
+              <Play className="w-4 h-4" />
+              Watch
+            </Link>
+            <span className="text-slate-300">
+              {firstName}
             </span>
           </div>
         </div>
       </header>
 
       <main className="max-w-7xl mx-auto px-4 py-8">
-        {/* Coming Soon Notice */}
-        <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-lg p-4 mb-8">
-          <p className="text-yellow-400 text-center">
-            🚧 Dashboard preview — authentication coming soon
-          </p>
-        </div>
 
         {/* Stats */}
         <div className="grid md:grid-cols-4 gap-4 mb-8">
