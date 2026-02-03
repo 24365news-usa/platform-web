@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { ArrowLeft, Upload, Loader2, CheckCircle, AlertCircle, Film } from "lucide-react";
-import { STATES_CITIES } from "@/lib/locations";
+// import { STATES_CITIES } from "@/lib/locations";
 
 const CATEGORIES = [
   { id: "", label: "Auto-detect from content" },
@@ -19,42 +19,19 @@ const CATEGORIES = [
   { id: "health", label: "Health" },
 ];
 
-const COUNTRIES = [
-  { code: "US", name: "United States" },
-  { code: "CA", name: "Canada" },
-  { code: "MX", name: "Mexico" },
-  { code: "GB", name: "United Kingdom" },
-  { code: "FR", name: "France" },
-  { code: "DE", name: "Germany" },
-  { code: "IT", name: "Italy" },
-  { code: "ES", name: "Spain" },
-  { code: "AU", name: "Australia" },
-  { code: "JP", name: "Japan" },
-  { code: "IN", name: "India" },
-  { code: "BR", name: "Brazil" },
-  { code: "AR", name: "Argentina" },
-  { code: "OTHER", name: "Other Country" },
-];
+// Temporarily simplified - will add back location fields after fixing database
 
 // Force deployment refresh
 export default function UploadPage() {
   const { isSignedIn, user } = useUser();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("");
-  const [country, setCountry] = useState("US"); // Default to US
-  const [state, setState] = useState("");
-  const [city, setCity] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState<"idle" | "uploading" | "processing" | "complete" | "error">("idle");
   const [error, setError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Get available cities for selected state (US only)
-  const availableCities = (country === "US" && state) ? STATES_CITIES.find(s => s.state === state)?.cities || [] : [];
-  const isUSA = country === "US";
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -98,11 +75,7 @@ export default function UploadPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ 
           title: title.trim(), 
-          description: description.trim(),
-          category: category || null,
-          country: country || null,
-          state: state || null,
-          city: city || null
+          description: description.trim()
         }),
       });
 
@@ -198,10 +171,6 @@ export default function UploadPage() {
                   setFile(null);
                   setTitle("");
                   setDescription("");
-                  setCategory("");
-                  setCountry("US");
-                  setState("");
-                  setCity("");
                   setProgress(0);
                 }}
                 className="bg-slate-700 hover:bg-slate-600 px-6 py-3 rounded-lg transition"
@@ -296,122 +265,7 @@ export default function UploadPage() {
                 />
               </div>
 
-              {/* Category */}
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Category
-                </label>
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  disabled={uploading}
-                  className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 transition disabled:opacity-50"
-                >
-                  {CATEGORIES.map((cat) => (
-                    <option key={cat.id} value={cat.id}>
-                      {cat.label}
-                    </option>
-                  ))}
-                </select>
-                <p className="text-sm text-slate-500 mt-1">
-                  Leave as "Auto-detect" to let AI categorize your video
-                </p>
-              </div>
-
-              {/* Location */}
-              <div className="space-y-4">
-                {/* Country */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Country
-                  </label>
-                  <select
-                    value={country}
-                    onChange={(e) => {
-                      setCountry(e.target.value);
-                      setState("");
-                      setCity("");
-                    }}
-                    disabled={uploading}
-                    className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 transition disabled:opacity-50"
-                  >
-                    {COUNTRIES.map((countryData) => (
-                      <option key={countryData.code} value={countryData.code}>
-                        {countryData.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {/* State/Province */}
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      {isUSA ? "State/Territory" : "State/Province"}
-                    </label>
-                    {isUSA ? (
-                      <select
-                        value={state}
-                        onChange={(e) => {
-                          setState(e.target.value);
-                          setCity(""); // Clear city when state changes
-                        }}
-                        disabled={uploading}
-                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 transition disabled:opacity-50"
-                      >
-                        <option value="">Auto-detect location</option>
-                        {STATES_CITIES.map((stateData) => (
-                          <option key={stateData.state} value={stateData.state}>
-                            {stateData.state}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <input
-                        type="text"
-                        value={state}
-                        onChange={(e) => setState(e.target.value)}
-                        placeholder="Enter state/province (optional)"
-                        disabled={uploading}
-                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 transition disabled:opacity-50"
-                      />
-                    )}
-                  </div>
-
-                  {/* City */}
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      City
-                    </label>
-                    {isUSA ? (
-                      <select
-                        value={city}
-                        onChange={(e) => setCity(e.target.value)}
-                        disabled={uploading || !state}
-                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 transition disabled:opacity-50"
-                      >
-                        <option value="">
-                          {state ? "Select city (optional)" : "Select state first"}
-                        </option>
-                        {availableCities.map((cityName) => (
-                          <option key={cityName} value={cityName}>
-                            {cityName}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <input
-                        type="text"
-                        value={city}
-                        onChange={(e) => setCity(e.target.value)}
-                        placeholder="Enter city (optional)"
-                        disabled={uploading}
-                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 transition disabled:opacity-50"
-                      />
-                    )}
-                  </div>
-                </div>
-              </div>
+              {/* Location fields temporarily removed - will add back after database update */}
 
               {/* Progress Bar */}
               {(status === "uploading" || status === "processing") && (
