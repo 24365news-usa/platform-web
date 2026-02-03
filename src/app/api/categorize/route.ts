@@ -45,7 +45,7 @@ async function classifyWithAI(
     const stateNames = US_STATES_AND_TERRITORIES.map((s) => s.name).join(", ");
 
     const response = await anthropic.messages.create({
-      model: "claude-sonnet-4-20250514",
+      model: "claude-3-5-haiku-20241022",
       max_tokens: 150,
       messages: [
         {
