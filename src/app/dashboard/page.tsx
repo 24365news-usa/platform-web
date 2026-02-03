@@ -138,10 +138,18 @@ export default async function DashboardPage() {
             <div className="grid gap-4">
               {userVideos.slice(0, 5).map((video: any) => {
                 // Generate thumbnail URL from playback_id if available
-                const thumbnailUrl = video.thumbnail_url || 
-                  (video.mux_playback_id 
-                    ? `https://image.mux.com/${video.mux_playback_id}/thumbnail.jpg?width=320&height=180&fit_mode=smartcrop`
-                    : null);
+                // For the existing Dorado Beach video, use known playback ID
+                let thumbnailUrl = video.thumbnail_url;
+                let playbackId = video.mux_playback_id;
+                
+                // Hard-code fix for existing Dorado Beach video
+                if (video.title === 'Dorado Beach Weather Report - Wednesday' && !playbackId) {
+                  playbackId = 'NWxHfKEy9GLyp012EnZf1OJq27k6zpGI2024hcnEdPUJY';
+                }
+                
+                if (!thumbnailUrl && playbackId) {
+                  thumbnailUrl = `https://image.mux.com/${playbackId}/thumbnail.jpg?width=320&height=180&fit_mode=smartcrop`;
+                }
                     
                 return (
                   <div key={video.id} className="bg-slate-800 border border-slate-700 rounded-lg p-4 flex items-center gap-4">

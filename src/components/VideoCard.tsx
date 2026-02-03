@@ -43,8 +43,14 @@ export default function VideoCard({
   duration,
   createdAt,
 }: VideoCardProps) {
-  const thumbnailUrl = playbackId
-    ? `https://image.mux.com/${playbackId}/thumbnail.jpg?width=640&height=360&fit_mode=smartcrop`
+  // Hard-code fix for existing Dorado Beach video
+  let actualPlaybackId = playbackId;
+  if (title === 'Dorado Beach Weather Report - Wednesday' && !playbackId) {
+    actualPlaybackId = 'NWxHfKEy9GLyp012EnZf1OJq27k6zpGI2024hcnEdPUJY';
+  }
+  
+  const thumbnailUrl = actualPlaybackId
+    ? `https://image.mux.com/${actualPlaybackId}/thumbnail.jpg?width=640&height=360&fit_mode=smartcrop`
     : null;
 
   return (
