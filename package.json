@@ -9,6 +9,12 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@clerk/nextjs": "^6.37.1",
+    "@mux/mux-node": "^12.8.1",
+    "@mux/mux-uploader-react": "^1.4.1",
+    "@supabase/supabase-js": "^2.94.0",
+    "hls.js": "^1.6.15",
+    "lucide-react": "^0.563.0",
     "next": "16.1.6",
     "react": "19.2.3",
     "react-dom": "19.2.3"
