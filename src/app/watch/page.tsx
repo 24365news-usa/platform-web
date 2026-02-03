@@ -1,36 +1,61 @@
 import Link from "next/link";
-import { Search, Filter, TrendingUp } from "lucide-react";
+import { Search, TrendingUp, Home } from "lucide-react";
 import VideoGrid from "@/components/VideoGrid";
 import { createClient } from "@supabase/supabase-js";
 
-async function getVideos() {
+const CATEGORIES = [
+  { id: "all", label: "All" },
+  { id: "breaking", label: "Breaking" },
+  { id: "politics", label: "Politics" },
+  { id: "local", label: "Local" },
+  { id: "weather", label: "Weather" },
+  { id: "sports", label: "Sports" },
+  { id: "business", label: "Business" },
+  { id: "entertainment", label: "Entertainment" },
+  { id: "technology", label: "Technology" },
+  { id: "health", label: "Health" },
+];
+
+async function getVideos(category?: string) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  
+
   if (!supabaseUrl || !supabaseKey) {
     return [];
   }
-  
+
   const supabase = createClient(supabaseUrl, supabaseKey);
-  
-  // Get all ready videos (for now, show all - later filter by is_published)
-  const { data, error } = await supabase
+
+  let query = supabase
     .from("videos")
     .select("*")
     .eq("status", "ready")
     .order("created_at", { ascending: false })
     .limit(50);
-  
+
+  // Filter by category if specified (and not "all")
+  if (category && category !== "all") {
+    query = query.eq("category", category);
+  }
+
+  const { data, error } = await query;
+
   if (error) {
     console.error("Error fetching videos:", error);
     return [];
   }
-  
+
   return data || [];
 }
 
-export default async function WatchPage() {
-  const videos = await getVideos();
+export default async function WatchPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string }>;
+}) {
+  const params = await searchParams;
+  const currentCategory = params.category || "all";
+  const videos = await getVideos(currentCategory);
 
   return (
     <div className="min-h-screen bg-slate-900 text-white">
@@ -56,6 +81,13 @@ export default async function WatchPage() {
 
           <div className="flex items-center gap-4 flex-shrink-0">
             <Link
+              href="/"
+              className="text-slate-300 hover:text-white transition flex items-center gap-1"
+            >
+              <Home className="w-4 h-4" />
+              Home
+            </Link>
+            <Link
               href="/dashboard"
               className="text-slate-300 hover:text-white transition hidden sm:block"
             >
@@ -68,66 +100,68 @@ export default async function WatchPage() {
       <main className="max-w-7xl mx-auto px-4 py-8">
         {/* Categories */}
         <div className="flex flex-wrap gap-2 mb-8">
-          <button className="bg-red-600 text-white px-4 py-2 rounded-full text-sm font-medium">
-            All
-          </button>
-          <button className="bg-slate-800 text-slate-300 hover:bg-slate-700 px-4 py-2 rounded-full text-sm font-medium transition">
-            Breaking
-          </button>
-          <button className="bg-slate-800 text-slate-300 hover:bg-slate-700 px-4 py-2 rounded-full text-sm font-medium transition">
-            Politics
-          </button>
-          <button className="bg-slate-800 text-slate-300 hover:bg-slate-700 px-4 py-2 rounded-full text-sm font-medium transition">
-            Local
-          </button>
-          <button className="bg-slate-800 text-slate-300 hover:bg-slate-700 px-4 py-2 rounded-full text-sm font-medium transition">
-            Weather
-          </button>
-          <button className="bg-slate-800 text-slate-300 hover:bg-slate-700 px-4 py-2 rounded-full text-sm font-medium transition">
-            Sports
-          </button>
+          {CATEGORIES.map((cat) => (
+            <Link
+              key={cat.id}
+              href={cat.id === "all" ? "/watch" : `/watch?category=${cat.id}`}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+                currentCategory === cat.id
+                  ? "bg-red-600 text-white"
+                  : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+              }`}
+            >
+              {cat.label}
+            </Link>
+          ))}
         </div>
 
-        {/* Trending section */}
+        {/* Videos section */}
         <div className="mb-8">
           <div className="flex items-center gap-2 mb-4">
             <TrendingUp className="w-5 h-5 text-red-500" />
-            <h2 className="text-xl font-semibold">Trending Now</h2>
+            <h2 className="text-xl font-semibold">
+              {currentCategory === "all"
+                ? "All Videos"
+                : CATEGORIES.find((c) => c.id === currentCategory)?.label || "Videos"}
+            </h2>
           </div>
 
           {videos.length > 0 ? (
             <VideoGrid videos={videos} />
           ) : (
             <div className="bg-slate-800/50 border border-slate-700 rounded-lg p-16 text-center">
-              <div className="text-6xl mb-4">🎬</div>
-              <h3 className="text-2xl font-semibold mb-2">Coming Soon</h3>
+              <div className="text-6xl mb-4">
+                {currentCategory === "weather" ? "🌤️" : 
+                 currentCategory === "politics" ? "🏛️" :
+                 currentCategory === "sports" ? "⚽" :
+                 currentCategory === "breaking" ? "🚨" :
+                 currentCategory === "local" ? "📍" : "🎬"}
+              </div>
+              <h3 className="text-2xl font-semibold mb-2">
+                {currentCategory === "all" 
+                  ? "Coming Soon" 
+                  : `No ${CATEGORIES.find((c) => c.id === currentCategory)?.label} Videos Yet`}
+              </h3>
               <p className="text-slate-400 max-w-md mx-auto mb-6">
-                Our network of citizen journalists is getting ready to launch. 
-                Be among the first to share your stories.
+                {currentCategory === "all"
+                  ? "Our network of citizen journalists is getting ready to launch. Be among the first to share your stories."
+                  : "Be the first to upload a video in this category!"}
               </p>
               <Link
-                href="/sign-up"
+                href="/upload"
                 className="bg-red-600 hover:bg-red-700 px-6 py-3 rounded-lg font-semibold transition inline-block"
               >
-                Become a Contributor
+                Upload a Video
               </Link>
             </div>
           )}
         </div>
-
-        {/* Latest section - shows when there are videos */}
-        {videos.length > 0 && (
-          <div>
-            <h2 className="text-xl font-semibold mb-4">Latest</h2>
-            <VideoGrid videos={videos} />
-          </div>
-        )}
       </main>
 
       {/* Footer */}
       <footer className="border-t border-slate-700 mt-16">
         <div className="max-w-7xl mx-auto px-4 py-8 text-center text-slate-500">
-          <p>&copy; 2025 24365.News — A Wyoming Corporation</p>
+          <p>&copy; 2026 24365.News — A Wyoming Corporation</p>
         </div>
       </footer>
     </div>

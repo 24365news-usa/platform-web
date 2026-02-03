@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
       console.log("Asset ready:", { assetId, playbackId, uploadId });
 
       // Update video record by upload_id
-      const { error } = await supabase
+      const { data: video, error } = await supabase
         .from("videos")
         .update({
           mux_asset_id: assetId,
@@ -39,12 +39,24 @@ export async function POST(request: NextRequest) {
           duration: duration,
           status: "ready",
         })
-        .eq("mux_upload_id", uploadId);
+        .eq("mux_upload_id", uploadId)
+        .select("id")
+        .single();
 
       if (error) {
         console.error("Failed to update video:", error);
       } else {
         console.log("Video updated successfully");
+        
+        // Trigger AI categorization
+        if (video?.id) {
+          const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://24365.news";
+          fetch(`${appUrl}/api/categorize`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ videoId: video.id }),
+          }).catch((err) => console.error("Categorization trigger failed:", err));
+        }
       }
     }
 
