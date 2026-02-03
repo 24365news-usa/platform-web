@@ -19,11 +19,29 @@ const CATEGORIES = [
   { id: "health", label: "Health" },
 ];
 
+const COUNTRIES = [
+  { code: "US", name: "United States" },
+  { code: "CA", name: "Canada" },
+  { code: "MX", name: "Mexico" },
+  { code: "GB", name: "United Kingdom" },
+  { code: "FR", name: "France" },
+  { code: "DE", name: "Germany" },
+  { code: "IT", name: "Italy" },
+  { code: "ES", name: "Spain" },
+  { code: "AU", name: "Australia" },
+  { code: "JP", name: "Japan" },
+  { code: "IN", name: "India" },
+  { code: "BR", name: "Brazil" },
+  { code: "AR", name: "Argentina" },
+  { code: "OTHER", name: "Other Country" },
+];
+
 export default function UploadPage() {
   const { isSignedIn, user } = useUser();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
+  const [country, setCountry] = useState("US"); // Default to US
   const [state, setState] = useState("");
   const [city, setCity] = useState("");
   const [file, setFile] = useState<File | null>(null);
@@ -33,8 +51,9 @@ export default function UploadPage() {
   const [error, setError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Get available cities for selected state
-  const availableCities = state ? STATES_CITIES.find(s => s.state === state)?.cities || [] : [];
+  // Get available cities for selected state (US only)
+  const availableCities = (country === "US" && state) ? STATES_CITIES.find(s => s.state === state)?.cities || [] : [];
+  const isUSA = country === "US";
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -80,6 +99,7 @@ export default function UploadPage() {
           title: title.trim(), 
           description: description.trim(),
           category: category || null,
+          country: country || null,
           state: state || null,
           city: city || null
         }),
@@ -178,6 +198,7 @@ export default function UploadPage() {
                   setTitle("");
                   setDescription("");
                   setCategory("");
+                  setCountry("US");
                   setState("");
                   setCity("");
                   setProgress(0);
@@ -297,50 +318,97 @@ export default function UploadPage() {
               </div>
 
               {/* Location */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* State */}
+              <div className="space-y-4">
+                {/* Country */}
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    State/Territory
+                    Country
                   </label>
                   <select
-                    value={state}
+                    value={country}
                     onChange={(e) => {
-                      setState(e.target.value);
-                      setCity(""); // Clear city when state changes
+                      setCountry(e.target.value);
+                      setState("");
+                      setCity("");
                     }}
                     disabled={uploading}
                     className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 transition disabled:opacity-50"
                   >
-                    <option value="">Auto-detect location</option>
-                    {STATES_CITIES.map((stateData) => (
-                      <option key={stateData.state} value={stateData.state}>
-                        {stateData.state}
+                    {COUNTRIES.map((countryData) => (
+                      <option key={countryData.code} value={countryData.code}>
+                        {countryData.name}
                       </option>
                     ))}
                   </select>
                 </div>
 
-                {/* City */}
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    City
-                  </label>
-                  <select
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    disabled={uploading || !state}
-                    className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 transition disabled:opacity-50"
-                  >
-                    <option value="">
-                      {state ? "Select city (optional)" : "Select state first"}
-                    </option>
-                    {availableCities.map((cityName) => (
-                      <option key={cityName} value={cityName}>
-                        {cityName}
-                      </option>
-                    ))}
-                  </select>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* State/Province */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      {isUSA ? "State/Territory" : "State/Province"}
+                    </label>
+                    {isUSA ? (
+                      <select
+                        value={state}
+                        onChange={(e) => {
+                          setState(e.target.value);
+                          setCity(""); // Clear city when state changes
+                        }}
+                        disabled={uploading}
+                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 transition disabled:opacity-50"
+                      >
+                        <option value="">Auto-detect location</option>
+                        {STATES_CITIES.map((stateData) => (
+                          <option key={stateData.state} value={stateData.state}>
+                            {stateData.state}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        value={state}
+                        onChange={(e) => setState(e.target.value)}
+                        placeholder="Enter state/province (optional)"
+                        disabled={uploading}
+                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 transition disabled:opacity-50"
+                      />
+                    )}
+                  </div>
+
+                  {/* City */}
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      City
+                    </label>
+                    {isUSA ? (
+                      <select
+                        value={city}
+                        onChange={(e) => setCity(e.target.value)}
+                        disabled={uploading || !state}
+                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 transition disabled:opacity-50"
+                      >
+                        <option value="">
+                          {state ? "Select city (optional)" : "Select state first"}
+                        </option>
+                        {availableCities.map((cityName) => (
+                          <option key={cityName} value={cityName}>
+                            {cityName}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <input
+                        type="text"
+                        value={city}
+                        onChange={(e) => setCity(e.target.value)}
+                        placeholder="Enter city (optional)"
+                        disabled={uploading}
+                        className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 transition disabled:opacity-50"
+                      />
+                    )}
+                  </div>
                 </div>
               </div>
 

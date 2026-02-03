@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     }
 
     const user = await currentUser();
-    const { title, description, category, state, city } = await request.json();
+    const { title, description, category, country, state, city } = await request.json();
 
     if (!title?.trim()) {
       return NextResponse.json({ error: "Title is required" }, { status: 400 });
@@ -50,6 +50,7 @@ export async function POST(request: NextRequest) {
         title: title.trim(),
         description: description?.trim() || null,
         category: category?.trim() || null,
+        country: country?.trim() || null,
         state: state?.trim() || null,
         city: city?.trim() || null,
         user_id: userId,
