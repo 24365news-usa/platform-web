@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowLeft, Eye, Clock, Share2, ThumbsUp } from "lucide-react";
 import VideoPlayer from "@/components/VideoPlayer";
+import ViewTracker from "@/components/ViewTracker";
 import { createClient } from "@supabase/supabase-js";
 import { notFound } from "next/navigation";
 
@@ -24,11 +25,7 @@ async function getVideo(id: string) {
     return null;
   }
   
-  // Increment view count
-  await supabase
-    .from("videos")
-    .update({ view_count: (data.view_count || 0) + 1 })
-    .eq("id", id);
+  // Note: View count is incremented via client-side API call to avoid RLS issues
   
   return data;
 }
@@ -54,6 +51,9 @@ export default async function VideoPage({
 
   return (
     <div className="min-h-screen bg-slate-900 text-white">
+      {/* Track view when page loads */}
+      <ViewTracker videoId={video.id} />
+      
       {/* Header */}
       <header className="border-b border-slate-700">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
