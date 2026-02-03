@@ -10,10 +10,10 @@ export default function Header({
   showSearch = false 
 }: HeaderProps) {
   return (
-    <header className="border-b border-slate-700 sticky top-0 bg-slate-900/95 backdrop-blur z-10">
+    <header className="border-b border-blue-900/50 sticky top-0 bg-[#0a1628]/95 backdrop-blur z-10">
       <nav className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
         <Link href="/" className="flex items-center gap-2 flex-shrink-0">
-          <span className="text-2xl font-bold text-red-500">24365</span>
+          <span className="text-2xl font-bold text-red-600">24365</span>
           <span className="text-2xl font-light text-white">.News</span>
         </Link>
 
