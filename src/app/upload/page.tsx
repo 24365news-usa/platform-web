@@ -4,17 +4,37 @@ import { useState, useRef } from "react";
 import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import { ArrowLeft, Upload, Loader2, CheckCircle, AlertCircle, Film } from "lucide-react";
+import { STATES_CITIES } from "@/lib/locations";
+
+const CATEGORIES = [
+  { id: "", label: "Auto-detect from content" },
+  { id: "breaking", label: "Breaking News" },
+  { id: "politics", label: "Politics" },
+  { id: "local", label: "Local News" },
+  { id: "weather", label: "Weather" },
+  { id: "sports", label: "Sports" },
+  { id: "business", label: "Business" },
+  { id: "entertainment", label: "Entertainment" },
+  { id: "technology", label: "Technology" },
+  { id: "health", label: "Health" },
+];
 
 export default function UploadPage() {
   const { isSignedIn, user } = useUser();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("");
+  const [state, setState] = useState("");
+  const [city, setCity] = useState("");
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [status, setStatus] = useState<"idle" | "uploading" | "processing" | "complete" | "error">("idle");
   const [error, setError] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Get available cities for selected state
+  const availableCities = state ? STATES_CITIES.find(s => s.state === state)?.cities || [] : [];
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0];
@@ -56,7 +76,13 @@ export default function UploadPage() {
       const response = await fetch("/api/upload", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ title: title.trim(), description: description.trim() }),
+        body: JSON.stringify({ 
+          title: title.trim(), 
+          description: description.trim(),
+          category: category || null,
+          state: state || null,
+          city: city || null
+        }),
       });
 
       if (!response.ok) {
@@ -151,6 +177,9 @@ export default function UploadPage() {
                   setFile(null);
                   setTitle("");
                   setDescription("");
+                  setCategory("");
+                  setState("");
+                  setCity("");
                   setProgress(0);
                 }}
                 className="bg-slate-700 hover:bg-slate-600 px-6 py-3 rounded-lg transition"
@@ -243,6 +272,76 @@ export default function UploadPage() {
                   disabled={uploading}
                   className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 transition resize-none disabled:opacity-50"
                 />
+              </div>
+
+              {/* Category */}
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Category
+                </label>
+                <select
+                  value={category}
+                  onChange={(e) => setCategory(e.target.value)}
+                  disabled={uploading}
+                  className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 transition disabled:opacity-50"
+                >
+                  {CATEGORIES.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.label}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-sm text-slate-500 mt-1">
+                  Leave as "Auto-detect" to let AI categorize your video
+                </p>
+              </div>
+
+              {/* Location */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* State */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    State/Territory
+                  </label>
+                  <select
+                    value={state}
+                    onChange={(e) => {
+                      setState(e.target.value);
+                      setCity(""); // Clear city when state changes
+                    }}
+                    disabled={uploading}
+                    className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 transition disabled:opacity-50"
+                  >
+                    <option value="">Auto-detect location</option>
+                    {STATES_CITIES.map((stateData) => (
+                      <option key={stateData.state} value={stateData.state}>
+                        {stateData.state}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* City */}
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    City
+                  </label>
+                  <select
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    disabled={uploading || !state}
+                    className="w-full bg-slate-700 border border-slate-600 rounded-lg px-4 py-3 focus:outline-none focus:border-red-500 transition disabled:opacity-50"
+                  >
+                    <option value="">
+                      {state ? "Select city (optional)" : "Select state first"}
+                    </option>
+                    {availableCities.map((cityName) => (
+                      <option key={cityName} value={cityName}>
+                        {cityName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               {/* Progress Bar */}

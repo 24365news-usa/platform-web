@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     }
 
     const user = await currentUser();
-    const { title, description } = await request.json();
+    const { title, description, category, state, city } = await request.json();
 
     if (!title?.trim()) {
       return NextResponse.json({ error: "Title is required" }, { status: 400 });
@@ -49,6 +49,9 @@ export async function POST(request: NextRequest) {
       .insert({
         title: title.trim(),
         description: description?.trim() || null,
+        category: category?.trim() || null,
+        state: state?.trim() || null,
+        city: city?.trim() || null,
         user_id: userId,
         user_name: user?.firstName || "Anonymous",
         mux_upload_id: upload.id,
