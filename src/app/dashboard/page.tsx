@@ -33,24 +33,33 @@ async function getUserStats(userId: string) {
   const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl || !supabaseKey) {
-    return { videoCount: 0, totalViews: 0 };
+    return { videoCount: 0, totalViews: 0, watchHours: 0 };
   }
 
   const supabase = createClient(supabaseUrl, supabaseKey);
   
   const { data, error } = await supabase
     .from("videos")
-    .select("views")
+    .select("views, duration")
     .eq("user_id", userId);
 
   if (error || !data) {
-    return { videoCount: 0, totalViews: 0 };
+    return { videoCount: 0, totalViews: 0, watchHours: 0 };
   }
 
   const videoCount = data.length;
   const totalViews = data.reduce((sum, video) => sum + (video.views || 0), 0);
+  
+  // Calculate estimated watch hours (duration in seconds * views / 3600 seconds per hour)
+  const watchMinutes = data.reduce((sum, video) => {
+    const durationSeconds = video.duration || 0;
+    const views = video.views || 0;
+    return sum + (durationSeconds * views / 60); // Convert to minutes
+  }, 0);
+  
+  const watchHours = Math.round(watchMinutes / 60 * 10) / 10; // Round to 1 decimal place
 
-  return { videoCount, totalViews };
+  return { videoCount, totalViews, watchHours };
 }
 
 export default async function DashboardPage() {
@@ -99,7 +108,7 @@ export default async function DashboardPage() {
             <div className="flex items-center gap-3">
               <Clock className="w-8 h-8 text-green-500" />
               <div>
-                <p className="text-2xl font-bold">0</p>
+                <p className="text-2xl font-bold">{stats.watchHours}</p>
                 <p className="text-slate-400 text-sm">Watch Hours</p>
               </div>
             </div>
