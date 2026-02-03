@@ -159,17 +159,16 @@ export default async function DashboardPage() {
                           src={thumbnailUrl} 
                           alt={video.title}
                           className="w-full h-full object-cover"
-                          onError={(e) => {
-                            // Fallback to video icon if thumbnail fails to load
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                            target.nextSibling && (target.nextSibling as HTMLElement).style.display = 'flex';
+                          onError={() => {
+                            // If thumbnail fails, component will show fallback icon instead
+                            console.log('Thumbnail failed to load for:', video.title);
                           }}
                         />
-                      ) : null}
-                      <div className="w-full h-full flex items-center justify-center text-slate-600 text-2xl" style={{display: thumbnailUrl ? 'none' : 'flex'}}>
-                        📹
-                      </div>
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-slate-600 text-2xl">
+                          📹
+                        </div>
+                      )}
                     </div>
                     <div className="flex-1">
                       <h3 className="font-semibold">{video.title}</h3>
