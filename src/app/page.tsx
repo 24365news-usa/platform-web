@@ -13,16 +13,22 @@ export default function Home() {
           </Link>
           <div className="flex items-center gap-4">
             <Link 
-              href="/dashboard" 
+              href="/watch" 
               className="text-slate-300 hover:text-white transition"
             >
-              Dashboard
+              Watch
             </Link>
             <Link 
-              href="/sign-in"
+              href="/sign-in" 
+              className="text-slate-300 hover:text-white transition"
+            >
+              Sign In
+            </Link>
+            <Link 
+              href="/sign-up"
               className="bg-red-700 hover:bg-red-600 px-4 py-2 rounded-lg transition"
             >
-              Become a Contributor
+              Join Us
             </Link>
           </div>
         </nav>
