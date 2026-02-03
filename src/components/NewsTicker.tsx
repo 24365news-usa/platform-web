@@ -10,7 +10,8 @@ interface NewsItem {
   source: string;
 }
 
-// Guaranteed 15 breaking news stories - no API dependencies
+// Guaranteed 15 breaking news stories - no API dependencies 
+// Version: 2.0 - Cache bust
 const GUARANTEED_NEWS: NewsItem[] = [
   { title: "BREAKING: Federal Reserve maintains key interest rate amid economic uncertainty", source: "Reuters", link: "https://24365.news", pubDate: new Date().toISOString() },
   { title: "LIVE: Congressional leaders advance infrastructure spending legislation", source: "CNN", link: "https://24365.news", pubDate: new Date().toISOString() },
@@ -33,7 +34,8 @@ export default function NewsTicker() {
   const [news] = useState<NewsItem[]>(GUARANTEED_NEWS);
   const [isPaused, setIsPaused] = useState(false);
 
-  // No loading state needed - news is always available
+  // Debug logging
+  console.log(`🚀 NewsTicker loaded with ${news.length} stories:`, news.map(n => n.title.substring(0, 30)).join(', '));
 
   return (
     <section className="bg-red-950/20 border-y border-red-800/30 overflow-hidden">
@@ -41,7 +43,7 @@ export default function NewsTicker() {
         <div className="max-w-[300%] mx-auto">
           <div className="flex items-center gap-6">
             <div className="bg-red-700 text-white px-4 py-2 text-base font-bold rounded shrink-0">
-              LIVE NEWS
+              LIVE NEWS ({news.length})
             </div>
             <div 
               className="flex-1 overflow-hidden"
