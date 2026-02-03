@@ -134,12 +134,6 @@ export default async function DashboardPage() {
         <div>
           <h2 className="text-xl font-semibold mb-4">Recent Videos</h2>
           
-          {/* Debug info - remove this later */}
-          <div className="mb-4 p-3 bg-blue-900/20 border border-blue-700 rounded text-sm">
-            <p>Debug: User ID = {userId}</p>
-            <p>Found {userVideos.length} videos for this user</p>
-          </div>
-          
           {userVideos.length > 0 ? (
             <div className="grid gap-4">
               {userVideos.slice(0, 5).map((video: any) => (
