@@ -28,49 +28,26 @@ async function getUserVideos(userId: string) {
   return data || [];
 }
 
-async function getUserStats(userId: string) {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !supabaseKey) {
-    return { videoCount: 0, totalViews: 0, watchHours: 0 };
-  }
-
-  const supabase = createClient(supabaseUrl, supabaseKey);
-  
-  const { data, error } = await supabase
-    .from("videos")
-    .select("views, duration")
-    .eq("user_id", userId);
-
-  if (error || !data) {
-    return { videoCount: 0, totalViews: 0, watchHours: 0 };
-  }
-
-  const videoCount = data.length;
-  const totalViews = data.reduce((sum, video) => sum + (video.views || 0), 0);
-  
-  // Calculate estimated watch hours (duration in seconds * views / 3600 seconds per hour)
-  const watchMinutes = data.reduce((sum, video) => {
-    const durationSeconds = video.duration || 0;
-    const views = video.views || 0;
-    return sum + (durationSeconds * views / 60); // Convert to minutes
-  }, 0);
-  
-  const watchHours = Math.round(watchMinutes / 60 * 10) / 10; // Round to 1 decimal place
-
-  return { videoCount, totalViews, watchHours };
-}
+// Stats now calculated directly from userVideos data for consistency
 
 export default async function DashboardPage() {
   const user = await currentUser();
   const firstName = user?.firstName || "Contributor";
   const userId = user?.id || "";
   
-  const [userVideos, stats] = await Promise.all([
-    getUserVideos(userId),
-    getUserStats(userId),
-  ]);
+  const userVideos = await getUserVideos(userId);
+  
+  // Calculate stats from the same data
+  const videoCount = userVideos.length;
+  const totalViews = userVideos.reduce((sum: number, video: any) => sum + (video.views || 0), 0);
+  const watchMinutes = userVideos.reduce((sum: number, video: any) => {
+    const durationSeconds = video.duration || 0;
+    const views = video.views || 0;
+    return sum + (durationSeconds * views / 60);
+  }, 0);
+  const watchHours = Math.round(watchMinutes / 60 * 10) / 10;
+  
+  const stats = { videoCount, totalViews, watchHours };
   
   return (
     <div className="min-h-screen bg-slate-900 text-white">
