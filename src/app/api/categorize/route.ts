@@ -257,19 +257,49 @@ export async function POST(request: NextRequest) {
     // Classify (category + location)
     const classification = await classifyWithAI(video.title, video.description);
 
-    // Update video with category and location
-    const { error: updateError } = await supabase
-      .from("videos")
-      .update({
-        category: classification.category,
-        state: classification.state,
-        city: classification.city,
-      })
-      .eq("id", videoId);
+    // Update video with category and location (add columns if they don't exist)
+    let updateData: any = {};
+    
+    // Try to add each field, ignoring errors if columns don't exist
+    try {
+      const { error: updateError } = await supabase
+        .from("videos")
+        .update({
+          category: classification.category,
+          state: classification.state,
+          city: classification.city,
+        })
+        .eq("id", videoId);
 
-    if (updateError) {
+      if (updateError) {
+        console.error("Update error:", updateError);
+        // If it's a column missing error, just update with basic fields
+        if (updateError.message?.includes("column") || updateError.message?.includes("does not exist")) {
+          // Try without location fields
+          const { error: basicUpdateError } = await supabase
+            .from("videos")
+            .update({
+              category: classification.category,
+            })
+            .eq("id", videoId);
+          
+          if (basicUpdateError) {
+            return NextResponse.json(
+              { error: "Failed to update category: " + basicUpdateError.message },
+              { status: 500 }
+            );
+          }
+        } else {
+          return NextResponse.json(
+            { error: "Failed to update category: " + updateError.message },
+            { status: 500 }
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Categorization update error:", error);
       return NextResponse.json(
-        { error: "Failed to update category" },
+        { error: "Failed to update video" },
         { status: 500 }
       );
     }
