@@ -37,3 +37,21 @@ body {
 .patriot-border {
   border-image: linear-gradient(90deg, var(--patriot-red) 0%, var(--patriot-blue) 100%) 1;
 }
+
+/* News ticker scrolling animation */
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-scroll {
+  animation: scroll 120s linear infinite;
+}
+
+.animate-scroll:hover {
+  animation-play-state: paused;
+}

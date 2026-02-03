@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Video, Users, Globe, ArrowRight, Star } from "lucide-react";
 import Navigation from "@/components/Navigation";
+import NewsTicker from "@/components/NewsTicker";
 
 export default function Home() {
   return (
@@ -42,6 +43,9 @@ export default function Home() {
             </Link>
           </div>
         </section>
+
+        {/* News Ticker */}
+        <NewsTicker />
 
         {/* Features */}
         <section className="max-w-7xl mx-auto px-4 py-16">
