@@ -39,10 +39,10 @@ export default async function DashboardPage() {
   
   // Calculate stats from the same data
   const videoCount = userVideos.length;
-  const totalViews = userVideos.reduce((sum: number, video: any) => sum + (video.views || 0), 0);
+  const totalViews = userVideos.reduce((sum: number, video: any) => sum + (video.view_count || 0), 0);
   const watchMinutes = userVideos.reduce((sum: number, video: any) => {
     const durationSeconds = video.duration || 0;
-    const views = video.views || 0;
+    const views = video.view_count || 0;
     return sum + (durationSeconds * views / 60);
   }, 0);
   const watchHours = Math.round(watchMinutes / 60 * 10) / 10;
@@ -149,7 +149,7 @@ export default async function DashboardPage() {
                     <h3 className="font-semibold">{video.title}</h3>
                     <p className="text-slate-400 text-sm">{video.description}</p>
                     <div className="flex items-center gap-4 mt-2 text-sm text-slate-500">
-                      <span>{video.views || 0} views</span>
+                      <span>{video.view_count || 0} views</span>
                       <span>{new Date(video.created_at).toLocaleDateString()}</span>
                       <span className="capitalize">{video.status}</span>
                     </div>
