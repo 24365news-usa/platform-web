@@ -10,32 +10,44 @@ interface NewsItem {
   source: string;
 }
 
-// Static breaking headlines - prevents re-render crashes
-const BREAKING_HEADLINES: NewsItem[] = [
-  { title: "BREAKING: Federal Reserve signals potential policy shift in upcoming meeting", source: "Reuters", link: "https://24365.news", pubDate: new Date().toISOString() },
-  { title: "LIVE: Congressional leaders negotiate critical spending package", source: "CNN", link: "https://24365.news", pubDate: new Date().toISOString() },
-  { title: "DEVELOPING: Major tech companies report strong quarterly earnings", source: "CNBC", link: "https://24365.news", pubDate: new Date().toISOString() },
-  { title: "UPDATE: International climate talks yield breakthrough accord", source: "BBC", link: "https://24365.news", pubDate: new Date().toISOString() },
-  { title: "ALERT: Healthcare legislation advances through Senate committee", source: "NPR", link: "https://24365.news", pubDate: new Date().toISOString() },
-  { title: "NOW: Supreme Court announces schedule for landmark cases", source: "AP News", link: "https://24365.news", pubDate: new Date().toISOString() },
-  { title: "URGENT: Cybersecurity agencies issue new threat warnings", source: "Washington Post", link: "https://24365.news", pubDate: new Date().toISOString() },
-  { title: "JUST IN: Energy department unveils renewable power initiative", source: "Bloomberg", link: "https://24365.news", pubDate: new Date().toISOString() },
-  { title: "BREAKING: Transportation secretary announces infrastructure funding", source: "USA Today", link: "https://24365.news", pubDate: new Date().toISOString() },
-  { title: "LIVE UPDATE: Economic indicators show mixed market signals", source: "Wall Street Journal", link: "https://24365.news", pubDate: new Date().toISOString() },
-  { title: "DEVELOPING: Education reforms gain bipartisan congressional support", source: "Education Week", link: "https://24365.news", pubDate: new Date().toISOString() },
-  { title: "ALERT: Space agency confirms successful mission milestone", source: "Space News", link: "https://24365.news", pubDate: new Date().toISOString() },
-  { title: "NOW REPORTING: Immigration policy discussions continue in Washington", source: "Politico", link: "https://24365.news", pubDate: new Date().toISOString() },
-  { title: "URGENT: Defense department updates on global security assessments", source: "Defense News", link: "https://24365.news", pubDate: new Date().toISOString() },
-  { title: "JUST IN: Agricultural sector receives federal disaster relief funding", source: "Farm Journal", link: "https://24365.news", pubDate: new Date().toISOString() },
-];
-
 export default function NewsTicker() {
-  const [news, setNews] = useState<NewsItem[]>(BREAKING_HEADLINES);
-  const [loading, setLoading] = useState(false);
+  const [news, setNews] = useState<NewsItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
-    console.log(`📰 Loading ${BREAKING_HEADLINES.length} breaking headlines`);
+    const fetchCachedNews = async () => {
+      try {
+        const response = await fetch('/api/refresh-news');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.news && data.news.length > 0) {
+            setNews(data.news);
+            console.log(`📰 Loaded ${data.news.length} cached news stories`);
+          }
+        } else {
+          // Trigger refresh if no cache exists
+          const refreshResponse = await fetch('/api/refresh-news', { method: 'POST' });
+          if (refreshResponse.ok) {
+            const refreshData = await refreshResponse.json();
+            // Try fetching again after refresh
+            setTimeout(fetchCachedNews, 2000);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch news:', error);
+        // Fallback stories
+        setNews([
+          { title: "BREAKING: 24365.News launches distributed journalism network", source: "24365.News", link: "https://24365.news", pubDate: new Date().toISOString() },
+          { title: "LIVE: Citizen reporters cover breaking news 24/7", source: "24365.News", link: "https://24365.news", pubDate: new Date().toISOString() },
+          { title: "DEVELOPING: Independent media challenges traditional outlets", source: "24365.News", link: "https://24365.news", pubDate: new Date().toISOString() },
+        ]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCachedNews();
   }, []);
 
   if (loading) {
