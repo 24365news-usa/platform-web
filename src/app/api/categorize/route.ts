@@ -222,6 +222,15 @@ function extractLocationByKeywords(
   return { state: null, city: null };
 }
 
+// Add GET method for testing
+export async function GET() {
+  return NextResponse.json({ 
+    status: "Categorization API is running",
+    categories: CATEGORIES,
+    anthropic_key_exists: !!process.env.ANTHROPIC_API_KEY
+  });
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { videoId } = await request.json();
