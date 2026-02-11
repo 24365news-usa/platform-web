@@ -47,7 +47,7 @@ export default function NewsTicker() {
       <div className="py-4">
         <div className="flex items-center gap-6">
           <div className="bg-red-700 text-white px-4 py-2 text-base font-bold rounded shrink-0 ml-4">
-            LIVE NEWS (8)
+            BREAKING NEWS (8)
           </div>
           <div className="flex-1 overflow-hidden h-6">
             <div ref={tickerRef} className="h-full relative"></div>
