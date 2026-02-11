@@ -38,4 +38,24 @@ body {
   border-image: linear-gradient(90deg, var(--patriot-red) 0%, var(--patriot-blue) 100%) 1;
 }
 
-/* Dead simple ticker - no CSS animation needed */
+/* Ultra-simple marquee that actually works */
+.news-scroll {
+  width: 100%;
+  overflow: hidden;
+}
+
+.news-text {
+  display: inline-block;
+  white-space: nowrap;
+  color: white;
+  animation: marquee 30s linear infinite;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(100%); }
+  100% { transform: translateX(-100%); }
+}
+
+.news-scroll:hover .news-text {
+  animation-play-state: paused;
+}
