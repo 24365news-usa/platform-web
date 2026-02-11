@@ -38,33 +38,4 @@ body {
   border-image: linear-gradient(90deg, var(--patriot-red) 0%, var(--patriot-blue) 100%) 1;
 }
 
-/* Simple, bulletproof news ticker */
-.ticker-container {
-  width: 100%;
-  overflow: hidden;
-}
-
-.ticker-content {
-  display: flex;
-  white-space: nowrap;
-  animation: scroll-left 12s linear infinite;
-}
-
-.ticker-item {
-  padding-right: 4rem;
-  display: inline-block;
-  white-space: nowrap;
-}
-
-@keyframes scroll-left {
-  0% {
-    transform: translateX(0%);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
-}
-
-.ticker-container:hover .ticker-content {
-  animation-play-state: paused;
-}
+/* Dead simple ticker - no CSS animation needed */
