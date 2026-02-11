@@ -38,24 +38,49 @@ body {
   border-image: linear-gradient(90deg, var(--patriot-red) 0%, var(--patriot-blue) 100%) 1;
 }
 
-/* Ultra-simple marquee that actually works */
-.news-scroll {
+/* Modern 2026 News Ticker - CSS Grid + Transform */
+.ticker-2026 {
   width: 100%;
   overflow: hidden;
+  position: relative;
 }
 
-.news-text {
-  display: inline-block;
+.ticker-track {
+  display: flex;
+  gap: 2rem;
+  animation: scroll-modern 45s linear infinite;
+  will-change: transform;
+}
+
+.ticker-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   white-space: nowrap;
-  color: white;
-  animation: marquee 30s linear infinite;
+  flex-shrink: 0;
 }
 
-@keyframes marquee {
-  0% { transform: translateX(100%); }
-  100% { transform: translateX(-100%); }
+@keyframes scroll-modern {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
 }
 
-.news-scroll:hover .news-text {
+/* Smooth hardware acceleration */
+.ticker-track {
+  backface-visibility: hidden;
+  perspective: 1000px;
+}
+
+/* Hover to pause - modern interaction */
+.ticker-2026:hover .ticker-track {
+  animation-play-state: paused;
+}
+
+/* Focus accessibility */
+.ticker-2026:focus-within .ticker-track {
   animation-play-state: paused;
 }
