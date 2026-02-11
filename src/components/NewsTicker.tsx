@@ -18,6 +18,9 @@ const NEWS_ITEMS: NewsItem[] = [
 ];
 
 export default function NewsTicker() {
+  // Create seamless loop by duplicating content
+  const duplicatedNews = [...NEWS_ITEMS, ...NEWS_ITEMS];
+
   return (
     <section className="bg-red-950/20 border-y border-red-800/30 overflow-hidden">
       <div className="py-4">
@@ -28,7 +31,7 @@ export default function NewsTicker() {
           <div className="flex-1 overflow-hidden">
             <div className="ticker-container">
               <div className="ticker-content">
-                {NEWS_ITEMS.map((item, index) => (
+                {duplicatedNews.map((item, index) => (
                   <span key={index} className="ticker-item">
                     <span className="text-red-300 font-semibold">{item.source}:</span>
                     <span className="text-white ml-2">{item.title}</span>
