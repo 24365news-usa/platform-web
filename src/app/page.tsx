@@ -104,7 +104,7 @@ export default function Home() {
             <Link href="/" className="hover:text-white transition">Home</Link>
             <Link href="/watch" className="hover:text-white transition">Watch</Link>
             <Link href="/about" className="hover:text-white transition">About</Link>
-            <Link href="/apply" className="hover:text-white transition">Join Us</Link>
+            <Link href="/apply" className="hover:text-white transition">Apply</Link>
           </div>
           <p className="text-center text-slate-500">
             &copy; 2026 24365.News — A Wyoming Corporation
